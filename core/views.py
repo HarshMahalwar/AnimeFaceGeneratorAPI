@@ -60,15 +60,7 @@ CHANNELS_IMG = 3
 Z_DIM = 128
 FEATURES_GEN = 64
 
-transforms = transforms.Compose(
-    [
-        transforms.Resize(IMAGE_SIZE),
-        transforms.ToTensor(),
-        transforms.Normalize(
-            [0.5 for _ in range(CHANNELS_IMG)], [0.5 for _ in range(CHANNELS_IMG)]
-        ),
-    ]
-)
+
 
 GenTrained = Generator(Z_DIM, CHANNELS_IMG, FEATURES_GEN).to(device)
 GenTrained.load_state_dict(torch.load('/home/harsh/Desktop/my_proj/GANdeplot/DeployGAN/staticfiles/Gen4.pth', map_location='cpu'))
