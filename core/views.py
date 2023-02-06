@@ -15,38 +15,6 @@ from rest_framework.parsers import MultiPartParser, FormParser
 # from core.serializers import FileSerializer
 
 
-class Discriminator(nn.Module):
-    def __init__(self, channels_img, features_d):
-        super(Discriminator, self).__init__()
-        self.disc = nn.Sequential(
-            nn.Conv2d(
-                channels_img, features_d, kernel_size=4, stride=2, padding=1
-            ),
-            nn.LeakyReLU(0.2),
-            self._block(features_d, features_d * 2, 4, 2, 1),
-            self._block(features_d * 2, features_d * 4, 4, 2, 1),
-            self._block(features_d * 4, features_d * 8, 4, 2, 1),
-            nn.Conv2d(features_d * 8, 1, kernel_size=4, stride=2, padding=0),
-        )
-
-    def _block(self, in_channels, out_channels, kernel_size, stride, padding):
-        return nn.Sequential(
-            nn.Conv2d(
-                in_channels,
-                out_channels,
-                kernel_size,
-                stride,
-                padding,
-                bias=False,
-            ),
-            nn.InstanceNorm2d(out_channels, affine=True),
-            nn.LeakyReLU(0.2),
-        )
-
-    def forward(self, x):
-        return self.disc(x)
-
-
 class Generator(nn.Module):
     def __init__(self, channels_noise, channels_img, features_g):
         super(Generator, self).__init__()
@@ -86,16 +54,11 @@ def initialize_weights(model):
 
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
-LEARNING_RATE = 5e-5
 BATCH_SIZE = 64
 IMAGE_SIZE = 64
 CHANNELS_IMG = 3
 Z_DIM = 128
-NUM_EPOCHS = 5
-FEATURES_CRITIC = 64
 FEATURES_GEN = 64
-CRITIC_ITERATIONS = 5
-WEIGHT_CLIP = 0.01
 
 transforms = transforms.Compose(
     [
@@ -107,34 +70,21 @@ transforms = transforms.Compose(
     ]
 )
 
-dataroot = '/home/harsh/Desktop/my_proj/GANdeplot/DeployGAN/staticfiles/Img'
-dataset = datasets.ImageFolder(root=dataroot, transform=transforms)
-loader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
-fixed_noise = torch.randn(32, Z_DIM, 1, 1).to(device)
-
 GenTrained = Generator(Z_DIM, CHANNELS_IMG, FEATURES_GEN).to(device)
 GenTrained.load_state_dict(torch.load('/home/harsh/Desktop/my_proj/GANdeplot/DeployGAN/staticfiles/Gen4.pth', map_location='cpu'))
-
-DiffTrained = Discriminator(CHANNELS_IMG, FEATURES_CRITIC).to(device)
-DiffTrained.load_state_dict(torch.load('/home/harsh/Desktop/my_proj/GANdeplot/DeployGAN/staticfiles/Diff4.pth', map_location='cpu'))
 
 image_path = "/home/harsh/Desktop/my_proj/GANdeplot/DeployGAN/staticfiles/Saved.jpg"
 
 
 def getImage():
-    for batch_idx, (data, _) in enumerate(loader):
-        data = data.to(device)
-        cur_batch_size = data.shape[0]
-        noise = torch.randn(cur_batch_size, Z_DIM, 1, 1).to(device)
-        GenTrained.eval()
-        DiffTrained.eval()
-        fake = GenTrained(noise)
-        img_grid_fake = torchvision.utils.make_grid(
-            fake[:32], normalize=True
-        )
-        torchvision.utils.save_image(img_grid_fake, image_path)
-
-        break
+    noise = torch.randn(64, Z_DIM, 1, 1).to(device)
+    GenTrained.eval()
+    DiffTrained.eval()
+    fake = GenTrained(noise)
+    img_grid_fake = torchvision.utils.make_grid(
+        fake[:32], normalize=True
+    )
+    torchvision.utils.save_image(img_grid_fake, image_path)
 
 
 class FileView(APIView):
