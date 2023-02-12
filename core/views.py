@@ -63,9 +63,9 @@ FEATURES_GEN = 64
 
 
 GenTrained = Generator(Z_DIM, CHANNELS_IMG, FEATURES_GEN).to(device)
-GenTrained.load_state_dict(torch.load('~/2d_cuties/AnimeFaceGeneratorAPI/staticfiles/Gen4.pth', map_location='cpu'))
+GenTrained.load_state_dict(torch.load('./staticfiles/Gen4.pth', map_location='cpu'))
 
-image_path = "~/2d_cuties/AnimeFaceGeneratorAPI/staticfiles/Saved.jpg"
+image_path = "./staticfiles/Saved.jpg"
 
 
 def getImage():
