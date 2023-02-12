@@ -69,12 +69,12 @@ image_path = "/home/harsh/Desktop/my_proj/GANdeplot/DeployGAN/staticfiles/Saved.
 
 
 def getImage():
-    noise = torch.randn(64, Z_DIM, 1, 1).to(device)
+    noise = torch.randn(1, Z_DIM, 1, 1).to(device)
     GenTrained.eval()
     DiffTrained.eval()
     fake = GenTrained(noise)
     img_grid_fake = torchvision.utils.make_grid(
-        fake[:32], normalize=True
+        fake, normalize=True
     )
     torchvision.utils.save_image(img_grid_fake, image_path)
 
